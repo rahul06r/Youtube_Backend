@@ -1,7 +1,7 @@
 // promises
 
-const ayncHandler = (requestHandler) => {
-    (req, res, next) => {
+const asyncHandler = (requestHandler) => {
+   return (req, res, next) => {
         Promise.resolve(requestHandler(req, res, next)).catch((error) => next(error))
     }
 
@@ -9,7 +9,7 @@ const ayncHandler = (requestHandler) => {
 
 
 
-export { ayncHandler }
+export { asyncHandler }
 
 
 // try catch block
