@@ -37,6 +37,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // start
     const { username, email, fullName, password } = req.body
+    // 
+    // console.log("LOGGing the Req.Body", req.body);
 
 
     console.log("Email", email);
@@ -56,7 +58,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     // 
-    const existingUser = User.findOne({
+    const existingUser = await User.findOne({
         $or: [{ email }, { username }]
     })
     console.log("Existing user ???", existingUser);
@@ -66,8 +68,15 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // 
+
+    // console.log("Req files ", req.files);
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverLocalPath = req.files?.coverImage[0]?.path;
+    // const coverLocalPath = req.files?.coverImage[0]?.path;
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files?.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path;
+
+    }
 
 
     console.log("AVATAR IMAGE LOCAL PATH: ! \t ", avatarLocalPath);
@@ -79,7 +88,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-    const coverImage = await uploadOnCloudinary(coverLocalPath);
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
 
     // 
@@ -102,7 +111,7 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
 
-    // checking user creation existence
+    // checking user creation existence and used for response to send back
     const createdUser = await User.findById(user._id).select("-password -refreshToken")
 
 
