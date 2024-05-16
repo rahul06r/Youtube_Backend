@@ -278,6 +278,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             secure: true
         }
 
+        // newRefreshToken is given bcz it is setting the value
         const { accessToken, newRefreshToken } = await generateAccessandrefeshTokens(user?._id)
 
 
