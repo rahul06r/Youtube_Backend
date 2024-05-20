@@ -439,9 +439,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         {
             $lookup: {
-                from: "subscriptions",//change name to lowercase
+                from: "subscriptions", //change name to lowercase
                 localField: "_id",
-                foreignField: "channnel",
+                foreignField: "channel",
                 as: "subscribers"
             }
         },

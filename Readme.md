@@ -7,7 +7,7 @@ https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj
 
 
 
-## gitignore generator 
+## Gitignore generator 
 https://mrkandreev.name/snippets/gitignore-generator/
 
 
