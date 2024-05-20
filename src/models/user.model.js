@@ -78,7 +78,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 
 
 userSchema.methods.generateAccessToken = function () {
-  return  jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -87,7 +87,7 @@ userSchema.methods.generateAccessToken = function () {
         },
         process.env.ACCESS_TOKEN_SCERET,
         {
-            expiresIn:process.env.ACCESS_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 
@@ -95,7 +95,7 @@ userSchema.methods.generateAccessToken = function () {
 
 // 
 userSchema.methods.generateRefershToken = function () {
-    return  jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
             // email: this.email,
@@ -104,7 +104,7 @@ userSchema.methods.generateRefershToken = function () {
         },
         process.env.REFRESH_TOKEN_SCERET,
         {
-            expiresIn:process.env.REFRESH_TOKEN_EXPIRY
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 
