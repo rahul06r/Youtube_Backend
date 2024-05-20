@@ -331,7 +331,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, {}, "Password Chnaged successfully!!"))
+        .json(new ApiResponse(200, {}, "Password Changed successfully!!"))
 })
 
 
@@ -347,7 +347,7 @@ const getcurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDeatils = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body;
     if (!fullName || !email) {
-        throw new ApiError(400, "AllFileds are required!!")
+        throw new ApiError(400, "All Fields are required!!")
     }
 
     const user = User.findByIdAndUpdate(req.user?._id, {
@@ -362,7 +362,7 @@ const updateAccountDeatils = asyncHandler(async (req, res) => {
         )
 })
 // Avatar upadte
-const userAvatarUpadte = asyncHandler(async (req, res) => {
+const userAvatarUpdate = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar image File is Missing!!")
@@ -391,7 +391,7 @@ const userAvatarUpadte = asyncHandler(async (req, res) => {
     )
 })
 // Cover upadte
-const userCoverUpadte = asyncHandler(async (req, res) => {
+const userCoverUpdate = asyncHandler(async (req, res) => {
     const coverLocalPath = req.file?.path;
     if (!coverLocalPath) {
         throw new ApiError(400, "Cover Image File is Missing!!")
@@ -428,6 +428,6 @@ export {
     changePassword,
     getcurrentUser,
     updateAccountDeatils,
-    userAvatarUpadte,
-    userCoverUpadte
+    userAvatarUpdate,
+    userCoverUpdate
 }
