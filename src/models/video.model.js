@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 
-import mongooseAggregatePaginate  from "mongoose-aggregate-paginate-v2";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 
 
@@ -26,19 +26,19 @@ const videoSchmea = new Schema(
         },
         duration: {
             type: Number,
-            required:true
+            required: true
         },
-        views:{
-            type:Number,
-            default:0
+        views: {
+            type: Number,
+            default: 0
         },
-        isPublished:{
-            type:Boolean,
-            deafult:true
+        isPublished: {
+            type: Boolean,
+            deafult: true
         },
-        owner:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"User"
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
         }
 
 
@@ -48,7 +48,7 @@ const videoSchmea = new Schema(
 
 
 
-    videoSchmea.plugin(mongooseAggregatePaginate)
+videoSchmea.plugin(mongooseAggregatePaginate)
 
 
 
