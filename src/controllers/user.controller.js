@@ -403,7 +403,7 @@ const updateAccountDeatils = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All Fields are required!!")
     }
 
-    const user = User.findByIdAndUpdate(req.user?._id, {
+    const user = await User.findByIdAndUpdate(req.user?._id, {
         $set: {
             fullName, email
         }
@@ -477,7 +477,7 @@ const userCoverUpdate = asyncHandler(async (req, res) => {
 
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const { username } = req.parms;
+    const { username } = req.params;
 
     if (!username?.trim()) {
         throw new ApiError(400, "Username is missing");
@@ -516,11 +516,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 },
                 isSubscribed: {
                     $cond: {
-                        $if: {
-                            $in: [req.user?._id, "$subscribers.subscriber"]
-                        },
-                        $then: true,
-                        $else: false
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false
                     }
                 }
             }
@@ -548,6 +546,9 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
             new ApiResponse(200, channel[0], "user Channel fected sucessfully")
         )
 })
+// 
+
+
 
 
 
