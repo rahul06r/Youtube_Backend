@@ -68,72 +68,112 @@ const publishvideo = asyncHandler(async (req, res) => {
 
 
 })
-
-
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit, query, sortBy, sortType, userId } = req.query
-    // given flexiblity for user to chosse the limit for a page!!
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    //TODO: get all videos based on query, sort, pagination
 
     if (!userId) {
         throw new ApiError(404, "Unauthorized Request!!")
     }
-    if (!isValidObjectId(userId)) {
-        console.log(`Logging ${isValidObjectId(userId)}`);
-        throw new ApiError(404, "Unauthorized Request!!")
-
+    const sortOptions = {};
+    if (sortBy) {
+        sortOptions[sortBy] = sortType == "desc" ? -1 : 1;
     }
-    const pipeline = [];
-    if (userId) {
-        await User.findById(userId)
-        pipeline.push(
+
+
+
+    try {
+        const result = await Video.aggregate([
             {
                 $match: {
-                    // owner: !isValidObjectId(userId)
-                    owner: new mongoose.Types.ObjectId(userId)
-                }
-            }
-        )
-        console.log(query, typeof query);
-        if (query) {
-            pipeline.push({
-                $match: {
-                    isPublished: false
-                }
-            })
-        }
-        let createfield = {}
-        if (sortBy && sortType) {
-            createfield[sortBy] = sortType == "asc" ? 1 : -1
-            pipeline.push({
-                $sort: createfield
-            })
-        }
-        else {
-            createfield["createdAt"] = -1
-            pipeline.push({
-                $sort: createfield
-            })
-        }
-
-        pipeline.push({
-            $skip: (page - 1) * parseInt(limit)
-        })
-        pipeline.push({
-            $limit: parseInt(limit)
-        })
-
-        console.log("Pipeline\n", pipeline);
-
-        const allVideos = await Video.aggregate(pipeline)
-        if (!allVideos) {
-            throw new ApiError(400, "pipeline problem")
-        }
-        res.status(200)
-            .json(new ApiResponse(200, allVideos, `All videos are here count:${allVideos.length}`))
-
+                    // $or: [
+                    //     { title: { $regex: query, $options: "i" } },
+                    //     { description: { $regex: query, $options: "i" } },
+                    // ],
+                    owner: new mongoose.Types.ObjectId(userId),
+                },
+            },
+            {
+                $sort: sortOptions,
+            },
+            {
+                $skip: (parseInt(page) - 1) * parseInt(limit),
+            },
+            {
+                $limit: parseInt(limit),
+            },
+        ]);
+        return res.status(200).json(new ApiResponse(200, result, "Success"));
+    } catch (e) {
+        throw new ApiError(500, e.message);
     }
-
 })
+
+
+// const getAllVideos = asyncHandler(async (req, res) => {
+//     const { page = 1, limit, query, sortBy, sortType, userId } = req.query
+//     // given flexiblity for user to chosse the limit for a page!!
+
+//     if (!userId) {
+//         throw new ApiError(404, "Unauthorized Request!!")
+//     }
+//     if (!isValidObjectId(userId)) {
+//         console.log(`Logging ${isValidObjectId(userId)}`);
+//         throw new ApiError(404, "Unauthorized Request!!")
+
+//     }
+//     const pipeline = [];
+//     if (userId) {
+//         await User.findById(userId)
+//         pipeline.push(
+//             {
+//                 $match: {
+//                     // owner: !isValidObjectId(userId)
+//                     owner: new mongoose.Types.ObjectId(userId)
+//                 }
+//             }
+//         )
+//         console.log(query, typeof query);
+//         if (query) {
+//             pipeline.push({
+//                 $match: {
+//                     isPublished: false
+//                 }
+//             })
+//         }
+//         let createfield = {}
+//         if (sortBy && sortType) {
+//             createfield[sortBy] = sortType == "asc" ? 1 : -1
+//             pipeline.push({
+//                 $sort: createfield
+//             })
+//         }
+//         else {
+//             createfield["createdAt"] = -1
+//             pipeline.push({
+//                 $sort: createfield
+//             })
+//         }
+
+//         pipeline.push({
+//             $skip: (page - 1) * parseInt(limit)
+//         })
+//         pipeline.push({
+//             $limit: parseInt(limit)
+//         })
+
+//         console.log("Pipeline\n", pipeline);
+
+//         const allVideos = await Video.aggregate(pipeline)
+//         if (!allVideos) {
+//             throw new ApiError(400, "pipeline problem")
+//         }
+//         res.status(200)
+//             .json(new ApiResponse(200, allVideos, `All videos are here count:${allVideos.length}`))
+
+//     }
+
+// })
 
 
 const getVideoId = asyncHandler(async (req, res) => {
@@ -229,7 +269,7 @@ const deleteVideoFile = asyncHandler(async (req, res) => {
 
 
         return res.status(200)
-            .json(new ApiResponse(200, {}, "Video deleted Successfully!!"))
+            .json(new ApiResponse(200, {}, `Video deleted Successfully!!   ${deleteVideo.title}`))
     } catch (error) {
         throw new ApiError(400, error.message || "Something went wrong")
 
