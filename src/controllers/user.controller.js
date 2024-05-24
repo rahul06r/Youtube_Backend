@@ -205,6 +205,7 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true
     }
+    console.log();
 
 
     return res.status(200)
@@ -391,6 +392,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 // get user 
 const getcurrentUser = asyncHandler(async (req, res) => {
+    console.log(req.user);
     return res.status(200)
         .json(new ApiResponse(200, req.user, "Current user fetched successfully"))
 })
