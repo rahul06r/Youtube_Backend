@@ -86,6 +86,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         const result = await Video.aggregate([
             {
                 $match: {
+                    // use below code only for getting specific title
                     // $or: [
                     //     { title: { $regex: query, $options: "i" } },
                     //     { description: { $regex: query, $options: "i" } },
@@ -203,8 +204,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 
     const video = await Video.findById(videoId)
-    // console.log("video owner",video.owner);
-    // console.log("User",req.user?._id);
+
     if (!video) {
         throw new ApiError(402, "Video not found!!")
     }
