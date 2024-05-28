@@ -40,6 +40,7 @@ app.use(cookieParser())
 import userRouter from './routes/user.routes.js'
 import videoRouter from "./routes/video.routes.js"
 import dahsboardRouter from "./routes/dahsboard.routes.js"
+import communityPostRouter from "./routes/communityPost.routes.js"
 
 
 
@@ -54,6 +55,9 @@ app.use("/api/v1/users", userRouter)
 app.use("/api/v1/video", videoRouter)
 // 
 app.use("/api/v1/dashboard", dahsboardRouter)
+
+
+app.use("/api/v1/communityPost",communityPostRouter)
 
 
 
