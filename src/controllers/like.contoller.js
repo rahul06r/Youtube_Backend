@@ -141,9 +141,94 @@ const getAllLikedVideos = asyncHandler(async (req, res) => {
     }
 
 })
+// 
+
+
+// extra end point for commuinty Post 
+const getAllLikedCommunity = asyncHandler(async (req, res) => {
+
+    try {
+        if (!req.user?._id && !isValidObjectId(req.user?._id)) {
+            throw new ApiError(400, "Unauthorized Request!!");
+        }
+        const allLikedCommunities = await Like.aggregate([
+            {
+                $match: {
+                    likedBy: req.user?._id,
+                    communityPost: {
+                        $exists: true,
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "communityposts",
+                    localField: "communityPost",
+                    foreignField: "_id",
+                    as: "allCommunitesPost"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$allCommunitesPost"
+                }
+            },
+            //  the below pipeline is an optional
+            {
+                $lookup: {
+                    from: "users",
+                    let: {
+                        ownerId: "$allCommunitesPost.owner"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: [
+                                        "$_id", "$$ownerId"
+                                    ]
+                                }
+                            },
+
+                        },
+                        {
+                            $project: {
+                                password: 0,
+                                refreshToken: 0,
+                                email:0,
+                                watchHistory:0,
+                                createdAt:0,
+                                updatedAt:0,
+
+                            }
+                        }
+                    ],
+                    as: "createdUser"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$createdUser"
+                }
+            },
+        ])
+        if (!allLikedCommunities.length) {
+            // throw new ApiResponse(202, allLikedVideos, ` No Liked Videos ${allLikedVideos.length}`);
+            throw new ApiError(402, "No Community post found")
+        }
+
+
+        return res.status(200)
+            .json(new ApiResponse(200, allLikedCommunities, `Fetched Successfully ${allLikedCommunities.length}`))
+    } catch (error) {
+        throw new ApiError(500, error.message || "Something went wrong!!")
+    }
+
+})
 
 export {
     toggleVideoLike,
     toggleCommunityPostLike,
-    getAllLikedVideos
+    getAllLikedVideos,
+    getAllLikedCommunity
 }
