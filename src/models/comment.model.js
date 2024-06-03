@@ -3,17 +3,21 @@ import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 
 const commentSchema = new Schema({
-    content:{
-        type:String,
-        required:true,
+    content: {
+        type: String,
+        required: true,
     },
-    owner:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    commentedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
-    video:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Video"
+    video: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video"
+    },
+    communityPost: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CommunityPost"
     }
 }, { timestamps: true })
 

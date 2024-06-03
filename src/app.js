@@ -42,6 +42,7 @@ import videoRouter from "./routes/video.routes.js"
 import dahsboardRouter from "./routes/dahsboard.routes.js"
 import communityPostRouter from "./routes/communityPost.routes.js"
 import likeRouter from "./routes/like.routes.js"
+import commentRouter from "./routes/comment.routes.js"
 
 
 
@@ -61,6 +62,8 @@ app.use("/api/v1/dashboard", dahsboardRouter)
 app.use("/api/v1/communityPost", communityPostRouter)
 // 
 app.use("/api/v1/like", likeRouter)
+// 
+app.use("/api/v1/comment", commentRouter)
 
 
 
