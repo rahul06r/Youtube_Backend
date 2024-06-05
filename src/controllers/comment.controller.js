@@ -132,10 +132,10 @@ const getAllVideosComment = asyncHandler(async (req, res) => {
             throw new ApiError(404, "No video id found!!");
         }
         console.log("Video Id", videoId);
-        
 
 
-        const commentsAggregate =  Comment.aggregate([
+
+        const commentsAggregate = Comment.aggregate([
             {
                 $match: {
                     video: new mongoose.Types.ObjectId(videoId),
@@ -153,7 +153,7 @@ const getAllVideosComment = asyncHandler(async (req, res) => {
                 $lookup: {
                     from: "likes",
                     localField: "_id",
-                    foreignField: "commentedBy",
+                    foreignField: "comment",
                     as: "likes",
                 },
             },
@@ -184,6 +184,7 @@ const getAllVideosComment = asyncHandler(async (req, res) => {
                         username: 1,
                         fullName: 1,
                         avatar: 1,
+                        _id:1,
                     },
                     isLiked: 1
                 },
@@ -366,10 +367,11 @@ const getAllCommentsOnCommunityPost = asyncHandler(async (req, res) => {
                 $lookup: {
                     from: "likes",
                     localField: "_id",
-                    foreignField: "commentedBy",
+                    foreignField: "comment",
                     as: "likes",
                 },
             },
+
             {
                 $addFields: {
                     likesCount: {
@@ -378,6 +380,7 @@ const getAllCommentsOnCommunityPost = asyncHandler(async (req, res) => {
                     owner: {
                         $first: "$owner",
                     },
+                    likeId: "$likes._id",
                     isLiked: {
                         $cond: {
                             if: { $in: [req.user?._id, "$likes.likedBy"] },
@@ -393,6 +396,7 @@ const getAllCommentsOnCommunityPost = asyncHandler(async (req, res) => {
                     createdAt: 1,
                     updatedAt: 1,
                     likesCount: 1,
+                    likedId: 1,
                     owner: {
                         username: 1,
                         fullName: 1,
@@ -430,6 +434,8 @@ const getAllCommentsOnCommunityPost = asyncHandler(async (req, res) => {
         throw new ApiError(500, error.message || "Something went wrong!!");
     }
 })
+
+
 
 
 

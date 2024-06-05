@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asynchandler.js"
 import { Like } from "../models/like.model.js";
-import { User } from "../models/user.model.js";
+
 
 
 // 
@@ -43,6 +43,39 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     }
 
 })
+// 
+
+const toogleCommentLike = asyncHandler(async (req, res) => {
+    const { commentId } = req.params;
+    try {
+        if (!commentId && !isValidObjectId(commentId)) {
+            throw new ApiError(400, "video id required!!");
+        }
+
+        if (!req.user?._id && !isValidObjectId(req.user?._id)) {
+            throw new ApiError(404, "Unauthorized Request!!");
+        }
+        const conditionForLike = { likedBy: req.user?._id, comment: commentId }
+        const isLiked = await Like.findOne(conditionForLike);
+        if (!isLiked) {
+            const createLike = await Like.create(
+                conditionForLike
+            );
+            return res.status(200)
+                .json(new ApiResponse(200, createLike, "Comment Liked Successfully"))
+
+        } else {
+            const disLike = await Like.findByIdAndDelete(isLiked._id)
+            return res.status(200)
+                .json(new ApiResponse(200, disLike, "Comment Unliked  Successfully"))
+        }
+
+
+    } catch (error) {
+        throw new ApiError(500, error.message || "Something went wrong!!")
+    }
+})
+
 
 // 
 const toggleCommunityPostLike = asyncHandler(async (req, res) => {
@@ -195,10 +228,10 @@ const getAllLikedCommunity = asyncHandler(async (req, res) => {
                             $project: {
                                 password: 0,
                                 refreshToken: 0,
-                                email:0,
-                                watchHistory:0,
-                                createdAt:0,
-                                updatedAt:0,
+                                email: 0,
+                                watchHistory: 0,
+                                createdAt: 0,
+                                updatedAt: 0,
 
                             }
                         }
@@ -230,5 +263,6 @@ export {
     toggleVideoLike,
     toggleCommunityPostLike,
     getAllLikedVideos,
-    getAllLikedCommunity
+    getAllLikedCommunity,
+    toogleCommentLike
 }
