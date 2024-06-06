@@ -380,7 +380,7 @@ const getAllCommentsOnCommunityPost = asyncHandler(async (req, res) => {
                     owner: {
                         $first: "$owner",
                     },
-                    likeId: "$likes._id",
+                    // likeId: "$likes._id",
                     isLiked: {
                         $cond: {
                             if: { $in: [req.user?._id, "$likes.likedBy"] },

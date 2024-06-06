@@ -179,15 +179,16 @@ const getAllLikedVideos = asyncHandler(async (req, res) => {
 
 // extra end point for commuinty Post 
 const getAllLikedCommunity = asyncHandler(async (req, res) => {
+    const { page, limit, sort } = req.query;
 
     try {
         if (!req.user?._id && !isValidObjectId(req.user?._id)) {
             throw new ApiError(400, "Unauthorized Request!!");
         }
-        const allLikedCommunities = await Like.aggregate([
+        const communititesAggrgate =  Like.aggregate([
             {
                 $match: {
-                    likedBy: req.user?._id,
+                    likedBy: new mongoose.Types.ObjectId(req.user?._id),
                     communityPost: {
                         $exists: true,
                     }
@@ -206,23 +207,17 @@ const getAllLikedCommunity = asyncHandler(async (req, res) => {
                     path: "$allCommunitesPost"
                 }
             },
-            //  the below pipeline is an optional
             {
                 $lookup: {
                     from: "users",
-                    let: {
-                        ownerId: "$allCommunitesPost.owner"
-                    },
+                    let: { ownerId: "$allCommunitesPost.owner" },
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
-                                    $eq: [
-                                        "$_id", "$$ownerId"
-                                    ]
+                                    $eq: ["$_id", "$$ownerId"]
                                 }
-                            },
-
+                            }
                         },
                         {
                             $project: {
@@ -232,7 +227,8 @@ const getAllLikedCommunity = asyncHandler(async (req, res) => {
                                 watchHistory: 0,
                                 createdAt: 0,
                                 updatedAt: 0,
-
+                                coverImage: 0,
+                                username: 0,
                             }
                         }
                     ],
@@ -244,15 +240,89 @@ const getAllLikedCommunity = asyncHandler(async (req, res) => {
                     path: "$createdUser"
                 }
             },
-        ])
-        if (!allLikedCommunities.length) {
-            // throw new ApiResponse(202, allLikedVideos, ` No Liked Videos ${allLikedVideos.length}`);
-            throw new ApiError(402, "No Community post found")
+            {
+                $lookup: {
+                    from: "likes",
+                    let: { communityPostId: "$communityPost" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ["$communityPost", "$$communityPostId"]
+                                }
+                            }
+                        },
+                        {
+                            $count: "likesCount"
+                        }
+                    ],
+                    as: "likes"
+                }
+            },
+            {
+                $addFields: {
+                    likesCount: { $ifNull: [{ $arrayElemAt: ["$likes.likesCount", 0] }, 0] }
+                }
+            },
+            // 
+            {
+                $lookup: {
+                    from: "comments",
+                    let: {
+                        communityPostId: "$allCommunitesPost._id"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$communityPost", "$$communityPostId"] }
+                            }
+                        },
+                        {
+                            $count: "commentsCount"
+                        }
+                    ],
+                    as: "comments"
+                }
+            },
+            {
+                $addFields: {
+                    commentsCount: { $ifNull: [{ $arrayElemAt: ["$comments.commentsCount", 0] }, 0] }
+                }
+            },
+            {
+                $project: {
+                    communityPost: "$allCommunitesPost",
+                    createdUser: 1,
+                    likesCount: 1,
+                    commentsCount: 1,
+                }
+            }
+
+        ]);
+
+        const options = {
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10),
+            sort: {
+                createdAt: parseInt(sort) || 1
+            }
+
+        };
+        // if (!communititesAggrgate.length) {
+        //     throw new ApiError(500, "Something went wrong!!");
+        // }
+        const allCommunitiyPost = await Like.aggregatePaginate(
+            communititesAggrgate,
+            options
+        )
+        if (!allCommunitiyPost || allCommunitiyPost.docs.length == 0) {
+            res.status(200)
+                .json(new ApiResponse(200, allCommunitiyPost, `Fetched Successfully ${allCommunitiyPost.docs.length}`))
         }
 
 
         return res.status(200)
-            .json(new ApiResponse(200, allLikedCommunities, `Fetched Successfully ${allLikedCommunities.length}`))
+            .json(new ApiResponse(200, allCommunitiyPost, `Fetched Successfully ${allCommunitiyPost.docs.length}`))
     } catch (error) {
         throw new ApiError(500, error.message || "Something went wrong!!")
     }
