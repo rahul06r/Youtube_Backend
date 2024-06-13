@@ -46,7 +46,7 @@ const videoSchmea = new Schema(
     { timestamps: true, })
 
 
-
+videoSchmea.index({ title: "text" });
 
 videoSchmea.plugin(mongooseAggregatePaginate)
 

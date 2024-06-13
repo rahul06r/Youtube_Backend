@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"
-import { deleteVideoFile, getAllVideos, getVideoId, publishvideo, togglePublishStatus, updateVideo } from "../controllers/video.controller.js";
+import { deleteVideoFile, getAllVideos, getVideoId, publishvideo, searchTitleVideo, togglePublishStatus, updateVideo } from "../controllers/video.controller.js";
 import { verifyJWT } from "../middlewares/auth.middlware.js";
 
 
@@ -28,6 +28,9 @@ router.route("/update-vid/:videoId").patch(verifyJWT, upload.single("thumbnail")
 router.route("/delete-vid/:videoId").delete(verifyJWT, deleteVideoFile)
 router.route("/toggle/publish-vid/:videoId").post(verifyJWT, togglePublishStatus)
 // ||above we used post bcz we are just hitting the end point and not sending any data! ,if we send any data we should patch
+
+
+router.route("/search-title/").get(searchTitleVideo)
 
 
 

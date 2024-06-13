@@ -306,7 +306,54 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 })
 
 
+// search Video by Title
+const searchTitleVideo = asyncHandler(async (req, res) => {
+    const { title } = req.query;
+    // ! add this if u need for authentication
+    // if (!req.user?._id) {
+    //     throw new ApiError(404, "Unauthorized Request!!")
+    // }
+    if (!title || title.trim() == "") {
+        throw new ApiError(404, "Title is Empty!!##")
+    }
+    try {
+        // const searchQuery = await Video.find(
+        //     // {
+        //     //     $text: {
+        //     //         $search: title.trim(),
+        //     //         // $caseSensitive: true
+        //     //     }
+        //     // },
 
+
+        // );
+
+        let searchQuery = await Video.find(
+            {
+                $text: { $search: title.trim().toString() }
+            },
+            {
+                score: { $meta: "textScore" }
+            }
+        ).sort({ score: { $meta: "textScore" } });
+
+        // result ==0 then
+        if (searchQuery.length === 0) {
+            searchQuery = await Video.find({
+                title: { $regex: new RegExp(title.trim(),) }
+            }).limit(10);
+        }
+
+        if (searchQuery.length == 0) {
+            return res.status(200)
+                .json(new ApiResponse(200, {}, `No Video Found for ${title}`));
+        }
+        return res.status(200)
+            .json(new ApiResponse(200, searchQuery, ` Video Found for ${title}`))
+    } catch (error) {
+        throw new ApiError(500, error.message || "Something went wrong")
+    }
+})
 
 
 
@@ -316,5 +363,6 @@ export {
     updateVideo,
     deleteVideoFile,
     togglePublishStatus,
-    getAllVideos
+    getAllVideos,
+    searchTitleVideo
 }
