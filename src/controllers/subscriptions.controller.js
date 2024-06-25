@@ -152,53 +152,57 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
     if (!subscriberId || !isValidObjectId(subscriberId)) {
         throw new ApiError(400, "No channel id found!!");
     }
-    const getChannels = await Subscription.aggregate([
-        {
-            $match: {
-                subscriber: new mongoose.Types.ObjectId(subscriberId)
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                subscribedId: {
-                    $push: "$channel"
+    try {
+        const getChannels = await Subscription.aggregate([
+            {
+                $match: {
+                    subscriber: new mongoose.Types.ObjectId(subscriberId)
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    subscribedId: {
+                        $push: "$channel"
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "subscribedId",
+                    foreignField: "_id",
+                    as: "channels",
+                    pipeline: [
+                        {
+                            $project: {
+                               
+                                watchHistory: 0,
+                                password: 0,
+                                refreshToken: 0
+    
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    channels: 1,
                 }
             }
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "subscribedId",
-                foreignField: "_id",
-                as: "channels",
-                pipeline: [
-                    {
-                        $project: {
-                           
-                            watchHistory: 0,
-                            password: 0,
-                            refreshToken: 0
-
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                channels: 1,
-            }
+        ]);
+        if (!getChannels || getChannels.length == 0) {
+            return res.status(200)
+                .json(new ApiResponse(200, getChannels, `No Subscribers Found ${getChannels.length}`))
+    
         }
-    ]);
-    if (!getChannels || getChannels.length == 0) {
         return res.status(200)
-            .json(new ApiResponse(200, getChannels, `No Subscribers Found ${getChannels.length}`))
-
+            .json(new ApiResponse(200, getChannels, ` Subscribers Found ${getChannels.length}`))
+    } catch (error) {
+        throw new ApiError(400, error.message || "Something went wrong")
     }
-    return res.status(200)
-        .json(new ApiResponse(200, getChannels, ` Subscribers Found ${getChannels.length}`))
 
 })
 

@@ -10,7 +10,7 @@ import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 import { Video } from "../models/video.model.js";
-import { User } from "../models/user.model.js";
+
 
 
 
@@ -36,35 +36,40 @@ const publishvideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Thumbnail file not found(Locally)!!")
     }
 
-    const videoFile = await uploadOnCloudinary(videoLocalPath)
+    try {
+        const videoFile = await uploadOnCloudinary(videoLocalPath)
 
-    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
 
-    if (!videoFile.url) {
-        throw new ApiError(400, "Upload failed (URL not found)")
+        if (!videoFile.url) {
+            throw new ApiError(400, "Upload failed (URL not found)")
+        }
+
+        if (!thumbnail.url) {
+            throw new ApiError(400, "Upload failed (URL not found)")
+        }
+
+        const videoUploadData = await Video.create({
+            videoFile: videoFile?.url,
+            thumbnail: thumbnail?.url,
+            title,
+            description,
+            duration: videoFile?.duration,
+            views: 0,
+            isPublished: false,
+            owner: userID
+        })
+        console.log("video data", videoUploadData);
+
+
+        return res.status(200)
+            .json(
+                new ApiResponse(200, videoUploadData, "Video uploaded Successfully")
+            )
+    } catch (error) {
+        throw new ApiError(400, error.message || "Something went wrong")
+
     }
-
-    if (!thumbnail.url) {
-        throw new ApiError(400, "Upload failed (URL not found)")
-    }
-
-    const videoUploadData = await Video.create({
-        videoFile: videoFile?.url,
-        thumbnail: thumbnail?.url,
-        title,
-        description,
-        duration: videoFile?.duration,
-        views: 0,
-        isPublished: false,
-        owner: userID
-    })
-    console.log("video data", videoUploadData);
-
-
-    return res.status(200)
-        .json(
-            new ApiResponse(200, videoUploadData, "Video uploaded Successfully")
-        )
 
 
 })
@@ -184,17 +189,21 @@ const getVideoId = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Video is is missing")
     }
 
-    const video = await Video.findById(videoId)
+    try {
+        const video = await Video.findById(videoId)
 
-    if (!video) {
-        throw new ApiError(400, "Error while fetching the video")
+        if (!video) {
+            throw new ApiError(400, "Error while fetching the video")
+        }
+
+        console.log("video found", video);
+
+
+        return res.status(200)
+            .json(new ApiResponse(200, video, "video fetched successfully!!!"))
+    } catch (error) {
+        throw new ApiError(400, error.message || "Something went wrong")
     }
-
-    console.log("video found", video);
-
-
-    return res.status(200)
-        .json(new ApiResponse(200, video, "video fetched successfully!!!"))
 
 })
 
@@ -221,28 +230,32 @@ const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Thumbnail not found (Locally)!!!")
     }
 
-    const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
-    // delete previous thumbnail
-    await deleteOnCloudinary(video.thumbnail)
-
-    if (!newThumbnail) {
-        throw new ApiError(500, "Thumbnail Uploading Failed!!!!")
-    }
-
-    // 
-    const updatedVideoDeatils = await Video.findByIdAndUpdate(videoId, {
-        $set: {
-            thumbnail: newThumbnail.url,
-            title,
-            description
+    try {
+        const newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+        // delete previous thumbnail
+        await deleteOnCloudinary(video.thumbnail)
+    
+        if (!newThumbnail) {
+            throw new ApiError(500, "Thumbnail Uploading Failed!!!!")
         }
-    }, { new: true })
-
-
-    return res.status(200)
-        .json(
-            new ApiResponse(200, updatedVideoDeatils, "Video updated successfully!!")
-        )
+    
+        // 
+        const updatedVideoDeatils = await Video.findByIdAndUpdate(videoId, {
+            $set: {
+                thumbnail: newThumbnail.url,
+                title,
+                description
+            }
+        }, { new: true })
+    
+    
+        return res.status(200)
+            .json(
+                new ApiResponse(200, updatedVideoDeatils, "Video updated successfully!!")
+            )
+    } catch (error) {
+        throw new ApiError(400, error.message || "Something went wrong")
+    }
 
 })
 
@@ -295,13 +308,17 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
         // console.log("eror Unauthorized Request ");
         throw new ApiError(400, "Unauthorized Request!!")
     }
-    toggleVideo.isPublished = !toggleVideo.isPublished
-    await toggleVideo.save({
-        validateBeforeSave: false
-    })
-
-    return res.status(200)
-        .json(new ApiResponse(200, toggleVideo.isPublished, "toggling Done"))
+    try {
+        toggleVideo.isPublished = !toggleVideo.isPublished
+        await toggleVideo.save({
+            validateBeforeSave: false
+        })
+    
+        return res.status(200)
+            .json(new ApiResponse(200, toggleVideo.isPublished, "toggling Done"))
+    } catch (error) {
+        throw new ApiError(400, error.message || "Something went wrong")
+    }
     // depends on frontend if he needs for video deatils send the res data as toggleVideo or just send toggleVideo.ispublished
 })
 
