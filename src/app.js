@@ -46,6 +46,8 @@ import commentRouter from "./routes/comment.routes.js"
 import playListRouter from "./routes/playlist.routes.js"
 import healthcheckRouter from "./routes/healthcheck.routes.js"
 import subscriptionsRouter from "./routes/subscriptions.routes.js"
+import joinChannelRouter from "./routes/join_channel.routes.js"
+import paymentRouter from "./routes/payment.routes.js"
 
 
 
@@ -75,6 +77,13 @@ app.use("/api/v1/health-check",healthcheckRouter)
 // 
 
 app.use("/api/v1/subscription",subscriptionsRouter)
+
+// 
+
+app.use("/api/v1/payment",paymentRouter)
+
+// 
+app.use("/api/v1/join",joinChannelRouter)
 
 
 export { app }
