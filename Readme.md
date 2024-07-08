@@ -19,6 +19,9 @@ https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj
 ### 4. Comment ,Playlist  , Subsriptions Collection
  ![Collection 4](<public/images/Collections 4.png>)
 
+ ### 5. Join and Payment Collection
+![Collection 5](<public/images/collections 5.png>)
+
 ### 5. Environments Variable 
 ![Environments Variable](<public/images/Environment Variable.png>)
 

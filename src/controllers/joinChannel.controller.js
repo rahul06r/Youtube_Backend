@@ -93,7 +93,95 @@ const joinChannel = asyncHandler(async (req, res) => {
 
 
 
+// get all the people who joined
+
+const getJoinedUser = asyncHandler(async (req, res) => {
+    if (!req.user?._id || !mongoose.isValidObjectId(req.user._id)) {
+        throw new ApiError(404, "Unauthorized request!!");
+    }
+    try {
+        const joineduser = await JoinChannel.aggregate([
+            {
+                $match: {
+                    channel: new mongoose.Types.ObjectId(req.user?._id)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "joinedUserId",
+                    foreignField: "_id",
+                    as: "userDeatil",
+                    pipeline: [
+                        {
+                            $project: {
+                                password: 0,
+                                watchHistory: 0,
+
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+        if (!joineduser || joineduser.length <= 0) {
+            return res.status(200)
+                .json(new ApiResponse(200, {}, "No user has joined"))
+
+        }
+        return res.status(200).json(new ApiResponse(200, joineduser, "Found successfully!"))
+
+    } catch (error) {
+        throw new ApiError(500, e.message || "Something went wrong");
+    }
+})
+
+// get the joined channels of the user
+
+const getJoinedChannel = asyncHandler(async (req, res) => {
+    if (!req.user?._id || !mongoose.isValidObjectId(req.user._id)) {
+        throw new ApiError(404, "Unauthorized request!!");
+    }
+    try {
+        const joinedChannel = await JoinChannel.aggregate([
+            {
+                $match: {
+                    joinedUserId: req.user?._id
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "channel",
+                    foreignField: "_id",
+                    as: "allChannel",
+                    pipeline: [
+                        {
+                            $project: {
+                                password: 0,
+                                watchHistory: 0,
+
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+        if (!joinedChannel || joinedChannel.length <= 0) {
+            return res.status(200)
+                .json(new ApiResponse(200, {}, "You have not joined any channel"))
+
+        }
+        return res.status(200).json(new ApiResponse(200, joinedChannel, "Found successfully!"))
+
+    } catch (error) {
+        throw new ApiError(500, e.message || "Something went wrong");
+    }
+})
+
 
 export {
-    joinChannel
+    joinChannel,
+    getJoinedUser,
+    getJoinedChannel,
 }

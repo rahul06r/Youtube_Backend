@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 
 const joinChannelSchema = new Schema({
@@ -20,4 +21,6 @@ const joinChannelSchema = new Schema({
     { timestamps: true, })
 
 joinChannelSchema.index({ paymentReference: "text" })
+
+joinChannelSchema.plugin(mongooseAggregatePaginate)
 export const JoinChannel = mongoose.model("JoinChannel", joinChannelSchema) 
